@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Telegram 商店</title>
+    <style>
+      body {
+        background-color: #f8f9fa; /* 设置背景颜色为淡灰色 */
+        font-family: Arial, sans-serif; /* 使用无衬线字体 */
+        margin: 0; /* 清除默认的页面边距 */
+        padding: 0; /* 清除默认的内边距 */
+      }
+      .container {
+        display: flex; /* 使用弹性布局 */
+        flex-wrap: wrap; /* 允许换行 */
+        justify-content: flex-start; /* 商品左对齐 */
+        padding: 10px; /* 增加容器内边距 */
+        margin: 0; /* 清除容器外边距 */
+        max-width: 100%; /* 让容器宽度适应屏幕 */
+      }
+      .product {
+        position: relative; /* 设置绝对定位的上下文 */
+        flex: 0 1 calc(33.33% - 20px); /* 每个商品占 1/3 的宽度，减去间距 */
+        margin: 10px; /* 上下左右间距均设置为 10px */
+        text-align: center; /* 文本居中 */
+        padding: 0; /* 内边距设置为 0 */
+        box-sizing: border-box; /* 使内边距和边框包含在宽度和高度内 */
+      }
+      .product img {
+        width: 100px; /* 设置图片宽度为 100px */
+        height: 100px; /* 设置图片高度为 100px */
+        margin: 0; /* 图片与商品名之间的上下间距设置为 0 */
+      }
+      .product-info {
+        display: flex; /* 使用弹性布局 */
+        justify-content: space-between; /* 商品名和价格之间的空间分配 */
+        align-items: center; /* 垂直居中对齐 */
+        margin: 0; /* 商品名和价格之间的上下间距设置为 0 */
+        width: 100%; /* 确保占满整个宽度 */
+        padding: 0; /* 移除商品信息的内边距 */
+      }
+      .price {
+        margin-left: 10px; /* 商品名与价格之间的间距 */
+        font-weight: bold; /* 加粗字体 */
+      }
+      .button-group {
+        display: flex; /* 使用弹性布局 */
+        justify-content: space-between; /* 按钮组两端对齐 */
+        align-items: center; /* 垂直居中对齐 */
+        margin-top: 5px; /* 与商品名之间的间距设置为 5px */
+        width: 100%; /* 设置按钮组的宽度与商品宽度相同 */
+      }
+      button {
+        color: white; /* 按钮文字颜色 */
+        border: none; /* 无边框 */
+        padding: 5px; /* 按钮的内边距 */
+        cursor: pointer; /* 鼠标悬停时呈现手形光标 */
+        border-radius: 5px; /* 圆角按钮 */
+        font-size: 14px; /* 调整字体大小 */
+        height: 30px; /* 设置按钮高度一致 */
+        flex: 1; /* 按钮宽度自适应，占满可用空间 */
+        margin: 0 2px; /* 按钮之间的间距 */
+      }
+      .join-cart {
+        background-color: #4caf50; /* 绿色按钮 */
+      }
+      .decrease {
+        background-color: #f44336; /* 红色按钮 */
+        display: none; /* 初始隐藏 */
+      }
+      .increase {
+        background-color: #2196f3; /* 蓝色按钮 */
+        display: none; /* 初始隐藏 */
+      }
+      .join-cart:hover,
+      .decrease:hover,
+      .increase:hover {
+        opacity: 0.9; /* 鼠标悬停时按钮颜色变化 */
+      }
+      .quantity {
+        position: absolute; /* 绝对定位 */
+        top: 5px; /* 距离顶部 5 像素 */
+        right: 5px; /* 距离右侧 5 像素 */
+        background-color: rgba(255, 0, 0, 0.7); /* 红色背景，透明度 0.7 */
+        color: white; /* 文字颜色为白色 */
+        border-radius: 50%; /* 设置为圆形 */
+        width: 25px; /* 固定宽度 */
+        height: 25px; /* 固定高度 */
+        display: none; /* 初始隐藏 */
+        align-items: center; /* 垂直居中对齐 */
+        justify-content: center; /* 水平居中对齐 */
+        font-weight: bold; /* 加粗字体 */
+        font-size: 16px; /* 调整字体大小 */
+      }
+
+      /* 媒体查询：在小屏幕上每行显示 2 个商品 */
+      @media (max-width: 768px) {
+        .product {
+          flex: 0 1 calc(50% - 20px); /* 每行显示 2 个商品 */
+        }
+      }
+
+      /* 媒体查询：在大屏幕上每行显示 3 个商品 */
+      @media (min-width: 769px) {
+        .product {
+          flex: 0 1 calc(33.33% - 20px); /* 每行显示 3 个商品 */
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" id="product-container"></div>
+
+    <script>
+      const products = Array.from({ length: 9 }, (_, i) => ({
+        name: `商品${i + 1}`,
+        img: `https://i.postimg.cc/SxxCLDjz/IMG-20240922-155206.png`, // 使用提供的图片链接
+        price: (i + 1) * 10, // 设置价格为 10, 20, 30, ...
+        quantity: 0,
+      }));
+
+      const container = document.getElementById("product-container");
+      products.forEach((product, index) => {
+        const productDiv = document.createElement("div");
+        productDiv.className = "product";
+        productDiv.innerHTML = `
+                <img src="${product.img}" alt="${product.name}">
+                <div class="product-info">
+                    <div>${product.name}</div>
+                    <div class="price">￥${product.price}</div> <!-- 仅显示“￥”符号 -->
+                </div>
+                <div class="button-group">
+                    <button id="cart-button-${index}" class="join-cart" onclick="toggleCart(${index})">加入购物车</button>
+                    <button id="decrease-button-${index}" class="decrease" onclick="decreaseQuantity(${index})">减少</button>
+                    <button id="increase-button-${index}" class="increase" onclick="increaseQuantity(${index})">增加</button>
+                </div>
+                <div class="quantity" id="quantity-${index}">0</div>
+            `;
+        container.appendChild(productDiv);
+      });
+
+      function toggleCart(index) {
+        const product = products[index];
+        const cartButton = document.getElementById(`cart-button-${index}`);
+        const decreaseButton = document.getElementById(
+          `decrease-button-${index}`
+        );
+        const increaseButton = document.getElementById(
+          `increase-button-${index}`
+        );
+        const quantityElement = document.getElementById(`quantity-${index}`);
+
+        // 显示减少和增加按钮，隐藏加入购物车按钮
+        cartButton.style.display = "none"; // 隐藏加入购物车按钮
+        decreaseButton.style.display = "inline-block"; // 显示减少按钮
+        increaseButton.style.display = "inline-block"; // 显示增加按钮
+
+        // 更新数量并显示
+        product.quantity++;
+        quantityElement.textContent = product.quantity;
+        quantityElement.style.display = "flex"; // 显示数量
+      }
+
+      function decreaseQuantity(index) {
+        const product = products[index];
+        const quantityElement = document.getElementById(`quantity-${index}`);
+        if (product.quantity > 0) {
+          product.quantity--;
+          quantityElement.textContent = product.quantity;
+
+          // 如果数量为 0，隐藏数量并恢复加入购物车按钮
+          if (product.quantity === 0) {
+            const cartButton = document.getElementById(`cart-button-${index}`);
+            const decreaseButton = document.getElementById(
+              `decrease-button-${index}`
+            );
+            const increaseButton = document.getElementById(
+              `increase-button-${index}`
+            );
+            cartButton.style.display = "inline-block"; // 显示加入购物车按钮
+            decreaseButton.style.display = "none"; // 隐藏减少按钮
+            increaseButton.style.display = "none"; // 隐藏增加按钮
+            quantityElement.style.display = "none"; // 隐藏数量
+          }
+        }
+      }
+
+      function increaseQuantity(index) {
+        const product = products[index];
+        const quantityElement = document.getElementById(`quantity-${index}`);
+        product.quantity++;
+        quantityElement.textContent = product.quantity;
+        quantityElement.style.display = "flex"; // 显示数量
+      }
+    </script>
+  </body>
+</html>
